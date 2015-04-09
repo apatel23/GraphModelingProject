@@ -19,8 +19,27 @@ public class Graph {
         }
         srcNeighbors.add(dest);
     }
+    
+    public void addRoute(String src, String dest) {
+        List<String> srcNeighbors = this.edges.get(src);
+        if (srcNeighbors == null) {
+            this.edges.put(src,
+                srcNeighbors = new ArrayList<String>()
+            );
+        }
+        srcNeighbors.add(dest);
+    }
 
     public Iterable<String> getNeighbors(String vertex) {
+        List<String> neighbors = this.edges.get(vertex);
+        if (neighbors == null) {
+            return Collections.emptyList();
+        } else {
+            return Collections.unmodifiableList(neighbors);
+        }
+    }
+    
+    public Iterable<String> getRoute(String vertex) {
         List<String> neighbors = this.edges.get(vertex);
         if (neighbors == null) {
             return Collections.emptyList();
