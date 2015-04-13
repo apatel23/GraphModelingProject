@@ -1,4 +1,4 @@
 
 public enum Transit {
-	HORSE, CABLE, BUS, TROLLEY;
+	HORSE, CABLE, BUS, TROLLEY, START;
 }

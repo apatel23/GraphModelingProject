@@ -7,44 +7,29 @@ import java.util.Map;
 
 public class Graph {
 	// Alternatively, use a Multimap:
-    // http://google-collections.googlecode.com/svn/trunk/javadoc/com/google/common/collect/Multimap.html
-    private Map<String, List<String>> edges = new HashMap<String, List<String>>();
+    // http://google-collections.googlecode.com/
+	// svn/trunk/javadoc/com/google/common/collect/Multimap.html
+	
+    public Map<Village, List<Edge>> edges = new HashMap<Village, List<Edge>>();
 
-    public void addEdge(String src, String dest) {
-        List<String> srcNeighbors = this.edges.get(src);
+    public void addEdge(Edge edge) {
+        List<Edge> srcNeighbors = this.edges.get(edge.getA());
         if (srcNeighbors == null) {
-            this.edges.put(src,
-                srcNeighbors = new ArrayList<String>()
+            this.edges.put(edge.getA(),
+                srcNeighbors = new ArrayList<Edge>()
             );
         }
-        srcNeighbors.add(dest);
+        System.out.println("add: " + edge.getName());
+        srcNeighbors.add(edge);
     }
-    
-    public void addRoute(String src, String dest) {
-        List<String> srcNeighbors = this.edges.get(src);
-        if (srcNeighbors == null) {
-            this.edges.put(src,
-                srcNeighbors = new ArrayList<String>()
-            );
-        }
-        srcNeighbors.add(dest);
-    }
-
-    public Iterable<String> getNeighbors(String vertex) {
-        List<String> neighbors = this.edges.get(vertex);
+ 
+    public Iterable<Edge> getNeighbors(Village vertex) {
+        List<Edge> neighbors = this.edges.get(vertex);
         if (neighbors == null) {
             return Collections.emptyList();
         } else {
             return Collections.unmodifiableList(neighbors);
         }
     }
-    
-    public Iterable<String> getRoute(String vertex) {
-        List<String> neighbors = this.edges.get(vertex);
-        if (neighbors == null) {
-            return Collections.emptyList();
-        } else {
-            return Collections.unmodifiableList(neighbors);
-        }
-    }
+
 }

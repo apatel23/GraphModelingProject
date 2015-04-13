@@ -3,7 +3,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-
 public class Maze {
 	
 	private Transit transit;
@@ -14,19 +13,31 @@ public class Maze {
 	private static Maze maze;
 	private int villages;
 	private int lines;
-	private ArrayList<String> vertices;
+	private ArrayList<Village> vertices;
 	private Graph g;
+	private Village start;
+	private Village finish;
+	private Boolean found;
+	private Boolean begin;
 	
 	// CONSTRUCTOR
 	public Maze(String file) throws FileNotFoundException {
-		transit = null;
+		transit = Transit.START;
 		last_transit = null;
-		color = null;
+		color = Color.START;
 		last_color = null;
-		vertices = new ArrayList<String>();
+		vertices = new ArrayList<Village>();
+		start = null;
+		finish = null;
+		found = false;
+		begin = true;
 		g = new Graph();
 		readFile(file);
+		System.out.println("end reading file");
+		setPoints(); // set start/finish points
+		iterate();	
 	}
+	
 	
 	// Parse the input file
 	public void readFile(String file) throws FileNotFoundException {
@@ -47,39 +58,30 @@ public class Maze {
 			color = color(col);
 			String route = breaks[3];
 			transit = transit(route);
-			if(!vertices.contains(city1)) vertices.add(city1);
-			if(!vertices.contains(city2)) vertices.add(city2);
-			if(last_transit == transit || last_transit == null)
-				g.addRoute(city1, city2);
-			else if(last_color == color || last_color == null)
-				g.addRoute(city1, city2);
-			g.addEdge(city1, city2);
-			g.addEdge(city2, city1);
-			System.out.println("city1: " + city1 + " city2: " + city2);
+			Village a = new Village(city1);
+			Village b = new Village(city2);
 			
+			Edge e = new Edge(a, b, transit, color);
+			a.addEdge(e);
+			b.addEdge(e);
+			g.addEdge(e);
 			
+			vertices.add(a);
 			last_transit = transit;
 			last_color = color;
 		}
 	}
 	
 	// Display each vertex's neighbors
-	public void neighhbors(String vertex) {
-		Iterable<String> neighbors = g.getNeighbors(vertex);
-		System.out.println("vertex: " + vertex);
-		for(String s : neighbors) {
-			System.out.println("neighbor: " + s);
+	public void neighhbors(Village vertex) {
+		Iterable<Edge> neighbors = g.getNeighbors(vertex);
+		System.out.println("------------");
+		System.out.println("vertex: " + vertex.getName());
+		for(Edge e : neighbors) {
+			System.out.println("edge: " + e.getName());
+			System.out.println("transit: " + e.getTransit() + " color: " + e.getColor());
 		}
 	}
-	
-	// Display each vertex's routes
-	public void routes(String vertex) {
-			Iterable<String> routes = g.getRoute(vertex);
-			System.out.println("vertex: " + vertex);
-			for(String s : routes) {
-				System.out.println("route: " + s);
-			}
-		}
 	
 	public Transit transit(String trans) {
 		switch(trans) {
@@ -108,8 +110,52 @@ public class Maze {
 			return null;
 		}
 	}
+	
+	public void setPoints() {
+		start = vertices.get(0);
+		finish = vertices.get(vertices.size()-1);
+		System.out.println("start: " + start.getName());
+		System.out.println("finish: " + finish.getName());
+	}
 
-
+	public void iterate() {
+		System.out.println("--------Iteration------------------");
+		// start iteration
+		if(start.neighbors == null) {
+			System.out.println("Solution: " + start.getName());
+			return;
+		}
+		Village currentV = start;
+		Village lastV = currentV;
+		// iterate until the destination is found
+		while(!found) {
+			System.out.println("current: " + currentV.getName());
+			// look at neighbors
+			if(currentV.neighbors.size() != 0) {
+				for(Edge e : currentV.neighbors) {
+					System.out.println("e: " + e.getName()) ;
+					if(!e.discovered) {
+						transit = e.getTransit();
+						color = e.getColor();
+						if(transit == last_transit || color == last_color || 
+								begin == true) {
+							e.discovered = true; // acceptable transfer
+							currentV = e.getA(); // go to next village
+						}
+					}
+				}	
+				// update the current Village	
+				last_transit = transit;
+				last_color = color;
+			} else {
+				currentV = lastV; // back up
+				transit = last_transit;
+				color = last_color;
+			}	
+			if(currentV == finish) found = true; // done
+		}	
+	}
+	
 	public static void main(String[] args) throws FileNotFoundException {
 		if(args.length < 1) {
 			System.out.println("No args");
@@ -119,11 +165,6 @@ public class Maze {
 		maze = new Maze(args[0]);
 		for(int i = 0; i < maze.vertices.size(); i++) {
 			maze.neighhbors(maze.vertices.get(i));
-		}
-		for(int i = 0; i < maze.vertices.size(); i++) {
-			maze.routes(maze.vertices.get(i));
-		}
-		
+		}	
 	}
-
 }
